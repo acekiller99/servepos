@@ -513,4 +513,10 @@ async def sync_offline_orders(
         created_orders.append(order)
 
     await db.flush()
-    return created_orders
+    # Re-fetch all orders with items to avoid lazy-load issues
+    order_ids = [o.id for o in created_orders]
+    result = await db.execute(
+        select(Order).where(Order.id.in_(order_ids)).options(selectinload(Order.items))
+        .execution_options(populate_existing=True)
+    )
+    return result.scalars().all()

@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
-from sqlalchemy import Date, cast, func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -25,7 +25,7 @@ async def daily_sales(
     current_user: Staff = Depends(require_roles("admin", "owner", "manager")),
 ):
     query = select(
-        cast(Order.created_at, Date).label("date"),
+        func.date(Order.created_at).label("date"),
         func.count(Order.id).label("order_count"),
         func.coalesce(func.sum(Order.subtotal), 0).label("subtotal"),
         func.coalesce(func.sum(Order.tax_amount), 0).label("tax"),
@@ -35,12 +35,12 @@ async def daily_sales(
     ).where(
         Order.outlet_id == current_user.outlet_id,
         Order.is_void == False,
-    ).group_by(cast(Order.created_at, Date)).order_by(cast(Order.created_at, Date).desc())
+    ).group_by(func.date(Order.created_at)).order_by(func.date(Order.created_at).desc())
 
     if date_from:
-        query = query.where(cast(Order.created_at, Date) >= date_from)
+        query = query.where(func.date(Order.created_at) >= date_from)
     if date_to:
-        query = query.where(cast(Order.created_at, Date) <= date_to)
+        query = query.where(func.date(Order.created_at) <= date_to)
 
     result = await db.execute(query)
     rows = result.all()
@@ -81,9 +81,9 @@ async def sales_by_item(
         .order_by(func.sum(OrderItem.subtotal).desc())
     )
     if date_from:
-        query = query.where(cast(Order.created_at, Date) >= date_from)
+        query = query.where(func.date(Order.created_at) >= date_from)
     if date_to:
-        query = query.where(cast(Order.created_at, Date) <= date_to)
+        query = query.where(func.date(Order.created_at) <= date_to)
 
     result = await db.execute(query)
     return [
@@ -117,9 +117,9 @@ async def sales_by_category(
         .order_by(func.sum(OrderItem.subtotal).desc())
     )
     if date_from:
-        query = query.where(cast(Order.created_at, Date) >= date_from)
+        query = query.where(func.date(Order.created_at) >= date_from)
     if date_to:
-        query = query.where(cast(Order.created_at, Date) <= date_to)
+        query = query.where(func.date(Order.created_at) <= date_to)
 
     result = await db.execute(query)
     return [
@@ -150,9 +150,9 @@ async def sales_by_staff(
         .order_by(func.sum(Order.total).desc())
     )
     if date_from:
-        query = query.where(cast(Order.created_at, Date) >= date_from)
+        query = query.where(func.date(Order.created_at) >= date_from)
     if date_to:
-        query = query.where(cast(Order.created_at, Date) <= date_to)
+        query = query.where(func.date(Order.created_at) <= date_to)
 
     result = await db.execute(query)
     return [
@@ -183,7 +183,7 @@ async def hourly_sales(
         .order_by(extract("hour", Order.created_at))
     )
     if target_date:
-        query = query.where(cast(Order.created_at, Date) == target_date)
+        query = query.where(func.date(Order.created_at) == target_date)
 
     result = await db.execute(query)
     return [
@@ -214,9 +214,9 @@ async def payment_methods_report(
         .order_by(func.sum(Payment.amount).desc())
     )
     if date_from:
-        query = query.where(cast(Payment.created_at, Date) >= date_from)
+        query = query.where(func.date(Payment.created_at) >= date_from)
     if date_to:
-        query = query.where(cast(Payment.created_at, Date) <= date_to)
+        query = query.where(func.date(Payment.created_at) <= date_to)
 
     result = await db.execute(query)
     return [
@@ -274,9 +274,9 @@ async def waste_report(
         .order_by(func.sum(func.abs(InventoryTransaction.quantity_change)).desc())
     )
     if date_from:
-        query = query.where(cast(InventoryTransaction.created_at, Date) >= date_from)
+        query = query.where(func.date(InventoryTransaction.created_at) >= date_from)
     if date_to:
-        query = query.where(cast(InventoryTransaction.created_at, Date) <= date_to)
+        query = query.where(func.date(InventoryTransaction.created_at) <= date_to)
 
     result = await db.execute(query)
     return [
@@ -317,9 +317,9 @@ async def profit_margin(
         .order_by(func.sum(OrderItem.subtotal).desc())
     )
     if date_from:
-        query = query.where(cast(Order.created_at, Date) >= date_from)
+        query = query.where(func.date(Order.created_at) >= date_from)
     if date_to:
-        query = query.where(cast(Order.created_at, Date) <= date_to)
+        query = query.where(func.date(Order.created_at) <= date_to)
 
     result = await db.execute(query)
     return [
@@ -365,9 +365,9 @@ async def peak_hours(
         .order_by(func.count(Order.id).desc())
     )
     if date_from:
-        query = query.where(cast(Order.created_at, Date) >= date_from)
+        query = query.where(func.date(Order.created_at) >= date_from)
     if date_to:
-        query = query.where(cast(Order.created_at, Date) <= date_to)
+        query = query.where(func.date(Order.created_at) <= date_to)
 
     result = await db.execute(query)
     day_names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]

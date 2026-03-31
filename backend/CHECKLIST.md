@@ -279,6 +279,32 @@ Cross-referenced against `02_SERVEPOS_RESTAURANT_POS.md` spec.
 
 **Implementation coverage: 91%**
 
+---
+
+## Test Coverage
+
+| Test File               | Tests | Status |
+|-------------------------|-------|--------|
+| test_health.py          | 3     | PASS   |
+| test_auth.py            | 8     | PASS   |
+| test_outlets.py         | 6     | PASS   |
+| test_staff.py           | 10    | PASS   |
+| test_menu.py            | 16    | PASS   |
+| test_orders.py          | 16    | PASS   |
+| test_tables.py          | 10    | PASS   |
+| test_kitchen.py         | 5     | PASS   |
+| test_payments.py        | 10    | PASS   |
+| test_inventory.py       | 7     | PASS   |
+| test_promotions.py      | 8     | PASS   |
+| test_reservations.py    | 8     | PASS   |
+| test_delivery.py        | 15    | PASS   |
+| test_reports.py         | 8     | PASS   |
+| **Total**               | **155** | **ALL PASS** |
+
+Run tests: `cd backend && python -m pytest tests/ -q`
+
+---
+
 ### Not Yet Implemented (13 items)
 1. `POST /api/v1/orders/{id}/split` — Split bill
 2. `POST /api/v1/orders/{id}/print` — Print receipt
